@@ -3,7 +3,9 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs'); 
 const jwt = require('jsonwebtoken');
 
-
+// TODO: add a role to user - Admin or Customer 
+// Admin - able to add items to the database 
+// customer - can only buy items
 const userSchema = new mongoose.Schema({
     name:{  // username 
         type:String,
