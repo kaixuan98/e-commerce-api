@@ -3,7 +3,9 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs'); 
 const jwt = require('jsonwebtoken');
 
-
+// TODO: add a role to user - Admin or Customer 
+// Admin - able to add items to the database 
+// customer - can only buy items
 const userSchema = new mongoose.Schema({
     name:{  // username 
         type:String,
@@ -41,6 +43,38 @@ const userSchema = new mongoose.Schema({
     }]
 }, {
     timestamps: true // auto create a createdAt and updated at field in db
+})
+
+// the schema has this method - used to generate auth token
+userSchema.methods.generateAuthToken  = async function (){
+    const user = this
+    const token = jwt.sign({ _id: user._id.toString()}, process.env.JWT_SECRET)
+    user.tokens = user.tokens.concat({token})
+    await user.save()
+    return token
+}
+
+// static function to fetch a user based on their email and password - for login purpose 
+userSchema.statics.findByCredentials = async (email, password) => {
+    const user = await User.findOne({email});
+    if(!user){
+        throw new Error('No such user')
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if(!isMatch){
+        throw new Error('Incorrect Password')
+    }
+    return user;
+}
+
+// pre middleware which run before a specific action 
+// this function will be run before we save the user 
+userSchema.pre('save', async function(next){
+    const user = this;
+    if(user.isModified('password')){
+        user.password = await bcrypt.hash(user.password, 8)
+    }
+    next()
 })
 
 const User = mongoose.model('User', userSchema);
