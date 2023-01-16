@@ -1,4 +1,4 @@
-const express = required('express');
+const express = require('express');
 const Item = require('../models/item');
 const Auth = require('../middleware/auth');
 
