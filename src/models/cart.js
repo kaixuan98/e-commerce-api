@@ -11,7 +11,7 @@ const cartSchema = new mongoose.Schema({
     items: [
         {
             itemId: {
-                type: ObjectID,
+                type: String, // suppose to be objectid because the front end passed just string id so this is a string instead of ObjectID
                 ref: 'Item',
                 required: true
             },

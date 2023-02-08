@@ -13,7 +13,7 @@ router.get('/cart', Auth, async(req,res) => {
         if(cart && cart.items.length > 0){
             res.status(200).send(cart);
         }else{
-            res.send(null)
+            res.send({message: "There is nothing in your bag yet!"})
         }
     }catch(error){
         res.status(500).send();
@@ -23,6 +23,7 @@ router.get('/cart', Auth, async(req,res) => {
 // create cart 
 router.post("/cart", Auth, async(req,res)=> {
     const owner = req.user._id; // get the owner of the cart with user id
+    const { itemId, quantity } = req.body;
 
     try{
         const cart = await Cart.findOne({owner});  // find the cart in cart model collection 
@@ -39,10 +40,18 @@ router.post("/cart", Auth, async(req,res)=> {
         if(cart){ // found a cart, add it to the cart and recalculate the bill 
             const itemIndex = cart.items.findIndex( (item) => item.itemId === itemId);
 
-            // check if product exists or not 
-            if(itemIndex > -1){
+            if(itemIndex > -1){ // product did exsist in the cart already
                 let product = cart.items[itemIndex];
                 product.quantity += quantity;
+                cart.bill = cart.items.reduce( (acc,curr) => {
+                    return acc + curr.quantity * curr.price;
+                },0)
+                await cart.save();
+                res.status(200).send(cart)
+            }else{ // does not exsists in the cart still ned to be aadded
+                cart.items.push(
+                    {itemId: itemId, name, quantity, price}
+                )
                 cart.bill = cart.items.reduce( (acc,curr) => {
                     return acc + curr.quantity * curr.price;
                 },0)
@@ -52,10 +61,9 @@ router.post("/cart", Auth, async(req,res)=> {
         }else{ // no cart, add that single item to cart 
             const newCart = await Cart.create({
                 owner,
-                items:[{itemId, name, quantity, price}],
+                items:[{itemId: itemId, name, quantity, price}],
                 bill: quantity * price,
             })
-
             return res.status(201).send(newCart);
         }
     }catch(error){
