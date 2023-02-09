@@ -54,7 +54,7 @@ router.post('/items/create', [Auth, upload.single('image')], async(req,res) => {
 
 // fetch an item 
 // TODO : is item out of stock 
-router.get('/items/:id', async(req, res)=> {
+router.get('/item/:id', async(req, res)=> {
     try{
         const item = await Item.findOne({_id: req.params.id});
         if(!item){
