@@ -21,16 +21,19 @@ router.get('/orders', Auth, async(req, res) => {
 router.post('/order/checkout', Auth, async(req,res) => {
     try{
         const owner = req.user._id;
-        
         // find cart and user 
         let cart = await Cart.findOne({owner});
-        let user = req.user
 
-        if(cart){
-            // add own payment api here 
-            res.status(200).send({message: 'Order Recieved'})
+        if(cart){ // if there is a cart then we can checkout
+            const order = await Order.create({
+                owner,
+                items: cart.items,
+                bill: cart.bill
+            })
+            const data = await Cart.findByIdAndDelete({_id: cart.id}) // delete cart after the checkout
+            res.status(200).send({status: 'Order Recieved', order: order})
         }else{
-            res.status(400).send("no Cart found")
+            res.status(400).send({status: 'No Cart Found'})
         }
     }catch(error){
         res.status(400).send('Checkout error');

@@ -4,7 +4,7 @@ require('./db/mongoose');
 const userRouter = require('./routers/user');
 const itemRouter = require('./routers/item');
 const cartRouter = require('./routers/cart');
-// const orderRouter = require('./routers/order');
+const orderRouter = require('./routers/order');
 
 // call the express app
 const app = express();
@@ -21,7 +21,7 @@ app.use(function(req, res, next) {
 app.use(userRouter);
 app.use(itemRouter);
 app.use(cartRouter);
-// app.use(orderRouter);
+app.use(orderRouter);
 
 // specifiy port 
 const port = process.env.PORT 

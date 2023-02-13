@@ -42,7 +42,7 @@ router.post("/cart", Auth, async(req,res)=> {
 
             if(itemIndex > -1){ // product did exsist in the cart already
                 let product = cart.items[itemIndex];
-                product.quantity += quantity;
+                product.quantity = quantity;
                 cart.bill = cart.items.reduce( (acc,curr) => {
                     return acc + curr.quantity * curr.price;
                 },0)
@@ -89,7 +89,7 @@ router.delete("/cart/", Auth, async(req, res)=> {
                 cart.bill = 0; 
             }
             cart.items.splice(itemIndex, 1);
-            cart.bill = cart.items.erduce( (acc, curr) => {
+            cart.bill = cart.items.reduce( (acc, curr) => {
                 return acc + curr.quantity * curr.price;
             },0)
             cart = await cart.save();
