@@ -1,26 +1,60 @@
 const express = require('express');
 const Item = require('../models/item');
 const Auth = require('../middleware/auth');
+const AWS = require('aws-sdk');
+const multer = require('multer');
+const multerS3 = require('multer-s3-v2');
+
+const bucketName = 'foliage-products-images';
+const region = 'ca-central-1';
+const accessKeyId = process.env.AWS_ACCESS_KEY;
+const secretAccessKey = process.env.AWS_SECRET_KEY;
 
 const router = new express.Router();
 
+
+AWS.config.update({
+    secretAccessKey,
+    accessKeyId,
+    region,
+    signatureVersion: 'v4'
+})
+
+const s3 = new AWS.S3();
+
+// upload the image using mutlerS3 
+const upload = multer({
+    storage: multerS3({
+        s3: s3,
+        bucket: bucketName,
+        metadata: function (req, file, cb) {
+            cb(null, {fieldName: file.fieldname});
+        },
+        key: function (req, file, cb) {
+            cb(null, Date.now()+file.originalname)
+        }
+    })
+})
+
 // create a new item 
-router.post('/items/create', Auth, async(req,res) => {
+router.post('/items/create', [Auth, upload.single('image')], async(req,res) => {
     try{
+        // get upload link 
         const newItem = new Item({
             ...req.body,
-            owner: req.user._id
+            image: req.file.location,
+            owner: req.user._id,
         });
         await newItem.save();
-        res.status(201).send(newItem);
+        res.status(201).send({newItem: newItem, message:"Uploaded!"});
     }catch(error){
-        res.status(400).send({message: 'error'});
+        res.status(400).send({message: 'Error when creating item'});
     }
 })
 
 // fetch an item 
 // TODO : is item out of stock 
-router.get('/items/:id', async(req, res)=> {
+router.get('/item/:id', async(req, res)=> {
     try{
         const item = await Item.findOne({_id: req.params.id});
         if(!item){
@@ -33,7 +67,7 @@ router.get('/items/:id', async(req, res)=> {
 })
 
 // fetch all items 
-router.get('/items/all', async(req, res)=> {
+router.get('/items', async(req, res)=> {
     try{
         const items = await Item.find({});  // provide an empty object to find all 
         res.status(200).send(items)

@@ -25,7 +25,6 @@ router.post('/users/login', async(req,res) => {
         const token = await user.generateAuthToken();
         res.status(200).send({user,token})
     }catch(error){
-        console.log(error)
         res.status(400).send(error)
     }
 })
@@ -39,9 +38,9 @@ router.post('/users/logout', Auth, async(req, res) => {
             return token.token !== req.token
         })
         await req.user.save()
-        res.send()
+        res.status(200).send({"message": "Logout Successful!"})
     }catch(error){
-        res.status(500).send()
+        res.status(500).send({"message": "Error at logging out"})
     }
 })
 
@@ -50,9 +49,9 @@ router.post('/users/logoutAll', Auth, async (req, res) => {
     try {
         req.user.tokens = [];
         await req.user.save();
-        res.send();
+        res.status(200).send({"message":"All accounts successfully logout!"});
     }catch(error){
-        res.status(500).send();
+        res.status(500).send({"message":"Error at logging all out"});
     }
 })
 

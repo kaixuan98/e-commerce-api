@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema({
 })
 
 // the schema has this method - used to generate auth token
-userSchema.methods.generateAuthToken  = async function (){
+userSchema.methods.generateAuthToken = async function (){
     const user = this
     const token = jwt.sign({ _id: user._id.toString()}, process.env.JWT_SECRET)
     user.tokens = user.tokens.concat({token})

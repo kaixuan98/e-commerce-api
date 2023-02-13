@@ -12,13 +12,22 @@ const itemSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    image: {
+        type: String,
+        required: true
+    },
     description:{
         type: String,
         required: true
     },
     category: {
         type: String,
-        required: true
+    },
+    humidity:{
+        type:String
+    },
+    sunlight:{
+        type:String
     },
     price:{
         type: Number,
