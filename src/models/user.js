@@ -57,8 +57,11 @@ userSchema.methods.generateAuthToken = async function (){
 // static function to fetch a user based on their email and password - for login purpose 
 userSchema.statics.findByCredentials = async (email, password) => {
     const user = await User.findOne({email});
+    if(password.length <= 0 ){
+        throw new Error('Password cannot be empty.')
+    }
     if(!user){
-        throw new Error('No such user')
+        throw new Error('No such user. Please Register')
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if(!isMatch){
